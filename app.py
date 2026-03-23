@@ -21,7 +21,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.image("https://i.imgur.com/8QJ5z0k.png", width=180)  # replace with your logo if you want
     st.markdown('<h1 class="big-title">BREWMETRICS: AI Viral Score Predictor</h1>', unsafe_allow_html=True)
-    st.markdown("**AI Engagement Score Predictor for Cavite Coffee ShopsSSSSSS**")
+    st.markdown("**AI Engagement Score Predictor for Cavite Coffee Shopsss**")
     st.caption(
         "Will your post drive High engagement? Our custom VADER + ML model analyzes sentiment, hooks, emojis & more — trained on real Cavite coffee shop data.")
 
