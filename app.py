@@ -9,147 +9,157 @@ nltk.download('vader_lexicon', quiet=True)
 
 st.set_page_config(page_title="BREWMETRICS", page_icon="☕", layout="wide")
 
-# ====================== HEADER ======================
+# ====================== PROFESSIONAL COFFEE THEME ======================
 st.markdown("""
 <style>
-    .big-title {font-size: 42px; font-weight: 800; color: #1E3A8A;}
-    .score-box {background: linear-gradient(135deg, #10B981, #34D399); color: white; padding: 20px; border-radius: 15px; text-align: center;}
+    .main {background-color: #2C1E16; color: #F5EDE4;}
+    h1, h2, h3 {color: #D4A017; font-family: 'Georgia';}
+    .metric-card {background-color: #3C2F2F; padding: 20px; border-radius: 15px; border: 2px solid #D4A017; text-align: center;}
+    .big-score {font-size: 4.5rem; font-weight: bold; color: #D4A017;}
+    .stButton>button {background-color: #D4A017; color: #2C1E16; font-weight: bold; border-radius: 10px;}
+    .viral-green {color: #22C55E;}
+    .viral-red {color: #EF4444;}
 </style>
 """, unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns([1, 2, 1])
+# ====================== HEADER ======================
+col1, col2, col3 = st.columns([1, 3, 1])
 with col2:
-    st.image("https://i.imgur.com/8QJ5z0k.png", width=180)  # replace with your logo if you want
-    st.markdown('<h1 class="big-title">BREWMETRICS: AI Viral Score Predictor</h1>', unsafe_allow_html=True)
-    st.markdown("**AI Engagement Score Predictor for Cavite Coffee Shops**")
-    st.caption(
-        "Will your post drive High engagement? Our custom VADER + ML model analyzes sentiment, hooks, emojis & more — trained on real Cavite coffee shop data.")
+    st.image("https://i.imgur.com/8QJ5z0k.png", width=200)
+    st.markdown("<h1 style='text-align:center; margin-bottom:0;'>BREWMETRICS</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; font-size:1.3rem; color:#D4A017;'>AI Viral Score Predictor for Cavite Coffee Shops</p>", unsafe_allow_html=True)
+    st.caption("Custom VADER + Random Forest • Trained on 530+ real Imus posts • Thesis 2025")
 
-# ====================== INPUTS ======================
-left, right = st.columns([1, 1])
+# ====================== NAVIGATION TABS ======================
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Home", "🔥 BrewViral Predictor", "📊 Sentiment Analyzer", "☕ Shop Insights", "💡 Recommendations"])
 
-with left:
-    st.subheader("Select Target Platform")
-    platform = st.selectbox("Platform", ["Instagram", "Facebook"], index=0)
+# ====================== TAB 1: HOME ======================
+with tab1:
+    st.subheader("Prioritized Imus Coffee Shops")
+    priority_data = {
+        "Shop Name": ["Rojo Cafe", "Sounds Like Coffee", "TASA", "D'Kalidad"],
+        "Priority": [1, 2, 3, 4],
+        "Avg. Engagement": [1564.85, 482.13, 215.45, 131.33],
+        "Key Focus": ["Viral reels & reach", "Niche high-quality content", "Conversation & comments", "Growth tracking"]
+    }
+    st.dataframe(pd.DataFrame(priority_data), use_container_width=True)
 
-    media_type = st.selectbox("Media Type", ["Image", "Video/Reel"])
-    is_video = 1 if "Video" in media_type else 0
+    st.markdown("**Thesis Stats**")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Posts Analyzed", "530+")
+    c2.metric("Custom VADER Accuracy", "77.27%")
+    c3.metric("Model Accuracy (SMOTE)", "59%")
+    c4.metric("Shops Covered", "6")
 
-    st.subheader("Paste Your Caption")
-    caption = st.text_area("Type or paste your post here...", height=180,
-                           placeholder="Valentine’s Day at our cafe 💐☕ Double the love, half the price!")
+# ====================== TAB 2: BREWVIRAL PREDICTOR (YOUR MAIN TOOL) ======================
+with tab2:
+    st.subheader("Free BrewViral Score Predictor")
+    st.caption("Paste any caption → get instant 0-100 Viral Score (probability of High engagement)")
 
-    followers = st.number_input("Your shop's approximate followers", min_value=500, value=6000, step=100)
+    left, right = st.columns([1, 1])
 
-with right:
-    if st.button("🚀 Predict Engagement Score", type="primary", use_container_width=True):
-        if not caption.strip():
-            st.error("Please paste a caption")
-            st.stop()
+    with left:
+        media_type = st.selectbox("Media Type", ["Image", "Video/Reel"])
+        is_video = 1 if "Video" in media_type else 0
+        caption = st.text_area("Paste your caption here...", height=180,
+                               placeholder="Valentine’s Day at Rojo Cafe 💐💖 Double the love, half the price!")
+        followers = st.number_input("Shop followers", min_value=500, value=6000, step=500)
 
-        with st.spinner("Analyzing with BREWMETRICS AI..."):
-            # Custom VADER
-            sia = SentimentIntensityAnalyzer()
-            custom_lexicon = {}
-            with open('cavite_lexicon.txt', 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        word, score = line.split(':')
-                        custom_lexicon[word.strip()] = float(score.strip())
-            sia.lexicon.update(custom_lexicon)
-            sentiment_score = sia.polarity_scores(caption)['compound']
+    with right:
+        if st.button("🚀 Predict Viral Score", type="primary", use_container_width=True):
+            if not caption.strip():
+                st.error("Please paste a caption")
+                st.stop()
 
-            # Feature extraction (same as your thesis)
-            caption_length = len(caption)
-            emoji_count = len(re.findall(r'[\U0001F000-\U0001FFFF]', caption))
-            hashtag_count = caption.count('#')
-            has_promo = 1 if re.search(r'promo|sale|discount|buy 2|grab now|half price|double', caption, re.I) else 0
-            is_question = 1 if '?' in caption else 0
+            with st.spinner("Brewing AI analysis..."):
+                # Custom VADER
+                sia = SentimentIntensityAnalyzer()
+                with open('cavite_lexicon.txt', 'r', encoding='utf-8') as f:
+                    for line in f:
+                        if line.strip() and not line.startswith('#'):
+                            word, score = line.split(':')
+                            sia.lexicon[word.strip()] = float(score.strip())
+                sentiment_score = sia.polarity_scores(caption)['compound']
 
-            # Load model
-            model = joblib.load('engagement_model.pkl')
-            le_post = joblib.load('le_post.pkl')
-            le_media = joblib.load('le_media.pkl')
+                # Features
+                caption_length = len(caption)
+                emoji_count = len(re.findall(r'[\U0001F000-\U0001FFFF]', caption))
+                hashtag_count = caption.count('#')
+                has_promo = 1 if re.search(r'promo|sale|discount|buy 2|grab now|half price|double', caption, re.I) else 0
+                is_question = 1 if '?' in caption else 0
 
-            # Prepare input
-            input_df = pd.DataFrame([{
-                'caption_length': caption_length,
-                'sentiment_score': sentiment_score,
-                'is_video': is_video,
-                'has_promo': has_promo,
-                'is_question': is_question,
-                'emoji_count': emoji_count,
-                'hashtag_count': hashtag_count,
-                'comment_count': 0,  # pre-post
-                'follower_count_at_collection': followers,
-                'post_type_encoded': le_post.transform(['post'])[0],
-                'media_type_encoded': le_media.transform([media_type])[0]
-            }])
+                # Model prediction
+                model = joblib.load('engagement_model.pkl')
+                le_post = joblib.load('le_post.pkl')
+                le_media = joblib.load('le_media.pkl')
 
-            pred = model.predict(input_df)[0]
-            proba = model.predict_proba(input_df)[0]
-            high_prob = proba[2] if len(proba) > 2 else proba.max()  # High class probability
-            score = round(high_prob * 100)
+                input_df = pd.DataFrame([{
+                    'caption_length': caption_length,
+                    'sentiment_score': sentiment_score,
+                    'is_video': is_video,
+                    'has_promo': has_promo,
+                    'is_question': is_question,
+                    'emoji_count': emoji_count,
+                    'hashtag_count': hashtag_count,
+                    'comment_count': 0,
+                    'follower_count_at_collection': followers,
+                    'post_type_encoded': le_post.transform(['post'])[0],
+                    'media_type_encoded': le_media.transform([media_type])[0]
+                }])
 
-            # ====================== RESULTS ======================
-            st.markdown(
-                f'<div class="score-box"><h1>{score}/100</h1><p><strong>{pred.upper()} ENGAGEMENT POTENTIAL</strong></p></div>',
-                unsafe_allow_html=True)
+                pred = model.predict(input_df)[0]
+                proba = model.predict_proba(input_df)[0]
+                score = round(proba[2] * 100) if len(proba) > 2 else round(max(proba) * 100)
 
-            st.subheader("Breakdown")
-            cols = st.columns(4)
-            with cols[0]:
-                st.metric("Sentiment Score", f"{round(sentiment_score, 2)}", "VADER + Cavite lexicon")
-            with cols[1]:
-                st.metric("Emojis", emoji_count, "🔥 Strong boost")
-            with cols[2]:
-                st.metric("Length", caption_length, "Sweet spot 40-80 chars")
-            with cols[3]:
-                st.metric("Questions/Promo", f"{'Yes' if is_question or has_promo else 'No'}", "CTA detected")
+                # Display
+                color = "viral-green" if score >= 70 else "viral-red" if score < 40 else ""
+                st.markdown(f'<div class="metric-card"><span class="big-score {color}">{score}</span><br><b>{pred.upper()} ENGAGEMENT</b></div>', unsafe_allow_html=True)
 
-            # Actionable Tips (your thesis style)
-            st.subheader("💡 Actionable Suggestions")
-            tips = []
-            if emoji_count < 3:
-                tips.append("Add 2-3 emojis (❤️🔥☕) → +42% engagement (per your model)")
-            if not is_question:
-                tips.append("Add a question (Have you tried our new matcha?) → stronger hook")
-            if sentiment_score < 0.6:
-                tips.append("Make caption more positive — use words like sarap, ganda, sulit")
-            if not has_promo and "promo" not in caption.lower():
-                tips.append("Include a limited-time offer — your data shows +35% reactions")
-            if caption_length > 120:
-                tips.append("Shorten to 40-80 characters — mobile users scroll away")
-            for t in tips:
-                st.success(t)
+                st.subheader("Why this score?")
+                cols = st.columns(4)
+                cols[0].metric("Sentiment", f"{round(sentiment_score,2)}")
+                cols[1].metric("Emojis", emoji_count)
+                cols[2].metric("Promo/Question", "Yes" if has_promo or is_question else "No")
+                cols[3].metric("Length", caption_length)
 
-            # How it works (static from your thesis)
-            st.subheader("How BREWMETRICS predicts engagement")
-            c1, c2, c3, c4 = st.columns(4)
-            with c1:
-                st.info("**Hook Efficiency** — questions & stopping-power words")
-            with c2:
-                st.info("**Sentiment Score** — custom VADER + Cavite lexicon")
-            with c3:
-                st.info("**Visual Scannability** — emojis, length, line breaks")
-            with c4:
-                st.info("**CTA Conversion** — promo words & clear next step")
+                st.subheader("Actionable Tips (Thesis-backed)")
+                tips = []
+                if emoji_count < 3: tips.append("✅ Add 2–3 emojis → +42% engagement")
+                if not is_question: tips.append("✅ Add a question → stronger hook")
+                if sentiment_score < 0.6: tips.append("✅ Use Taglish words: sarap, ganda, sulit")
+                if not has_promo: tips.append("✅ Add a limited offer")
+                for t in tips: st.success(t)
 
-            st.caption(
-                "Model trained on 530+ real Cavite coffee shop posts (TCD, Rojo, D'Kalidad, Eight Cup, etc.) with SMOTE balancing.")
+# ====================== TAB 3: SENTIMENT ANALYZER ======================
+with tab3:
+    st.subheader("Real-time Custom VADER Sentiment Analyzer")
+    text = st.text_area("Paste any caption or comment", height=150)
+    if text:
+        sia = SentimentIntensityAnalyzer()
+        with open('cavite_lexicon.txt', 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#'):
+                    word, score = line.split(':')
+                    sia.lexicon[word.strip()] = float(score.strip())
+        score = sia.polarity_scores(text)['compound']
+        cat = "Positive" if score > 0.1 else "Negative" if score < -0.05 else "Neutral"
+        st.metric("Cavite-Tuned Sentiment Score", f"{score:.3f}", cat)
 
-# ====================== FOOTER SECTIONS ======================
+# ====================== TAB 4: SHOP INSIGHTS ======================
+with tab4:
+    st.subheader("Imus Coffee Shop Performance")
+    st.info("Static insights from your thesis data (live model predictions coming in v2)")
+    st.markdown("- **Rojo Cafe**: Highest viral potential (1,564 avg engagement)")
+    st.markdown("- **TASA**: Conversation king (65 comments average)")
+    st.markdown("- Videos + emojis = strongest predictor of High engagement")
+
+# ====================== TAB 5: RECOMMENDATIONS ======================
+with tab5:
+    st.subheader("Pro Tips for Cavite Coffee Shops")
+    st.markdown("• Post Reels on weekends → highest predicted score")
+    st.markdown("• Use 3–5 emojis + 1 question → +35–42% engagement")
+    st.markdown("• Taglish + local words (sarap, ganda, sulit) = better VADER accuracy")
+    st.success("Deploy this dashboard and share the link with shop owners!")
+
 st.divider()
-st.subheader("Viral Score Predictor FAQ")
-with st.expander("How does the score work?"):
-    st.write("0-100 scale based on probability of **High** engagement from your RandomForest model.")
-with st.expander("Is it free?"):
-    st.write("Yes — built for your thesis. Deploy it and share with Cavite coffee shop owners!")
-with st.expander("Can I use this for videos?"):
-    st.write("Yes! Just select Video/Reel — the model was trained on both Images and Reels.")
-
-st.subheader("More Free Tools (coming soon)")
-st.info("Caption Analyzer • Viral Hook Generator • Hashtag Generator • Best Time to Post")
-
-st.caption("BREWMETRICS — Undergraduate Thesis | Cavite State University-Imus | October 2025")
+st.caption("BREWMETRICS • John Paul M. Fidelson + Team • Cavite State University-Imus • October 2025")
